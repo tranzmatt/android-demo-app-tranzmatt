@@ -1,0 +1,16 @@
+name: pt1.10
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - setuptools<68
+  - packaging
+  - pip:
+      - torch==1.10.1+cu102
+      - torchvision==0.11.2+cu102
+      - torchaudio==0.10.1
+      - pytorchvideo
+      - -f https://download.pytorch.org/whl/cu102/torch_stable.html
+
