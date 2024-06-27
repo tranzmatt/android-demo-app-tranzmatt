@@ -9,7 +9,6 @@ repositories {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
 
     defaultConfig {
         applicationId "org.pytorch.demo.imagesegmentation"
@@ -26,6 +25,7 @@ android {
             minifyEnabled false
         }
     }
+    namespace 'org.pytorch.imagesegmentation'
 }
 
 dependencies {
