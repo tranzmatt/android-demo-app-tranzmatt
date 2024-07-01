@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         })
         try {
             val br = BufferedReader(InputStreamReader(assets.open("vocab.txt")))
-            var line: String
+            //var line: String
             mTokenIdMap = HashMap()
             mIdTokenMap = HashMap()
             var count = 0L
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         val p = Pattern.compile("\\w+|\\S")
         val m = p.matcher(questionOrText)
         while (m.find()) {
-            val token = m.group().toLowerCase()
+            val token = m.group().lowercase(Locale.getDefault())
             if (mTokenIdMap!!.containsKey(token)) tokenIds.add(mTokenIdMap!![token]) else {
                 for (i in 0 until token.length) {
                     if (mTokenIdMap!!.containsKey(token.substring(0, token.length - i - 1))) {
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity(), Runnable {
             if (view == null) view = View(this)
             imm.hideSoftInputFromWindow(view.windowToken, 0)
 
-            val startIdx = mEditTextText!!.text.toString().toLowerCase().indexOf(result)
+            val startIdx = mEditTextText!!.text.toString().lowercase(Locale.ROOT).indexOf(result)
             if (startIdx == -1) {
                 mTextViewAnswer!!.text = "Beat me!"
                 return@runOnUiThread
