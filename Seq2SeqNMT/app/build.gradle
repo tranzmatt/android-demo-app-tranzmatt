@@ -22,6 +22,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'org.pytorch.demo.seq2seqnmt'
+    testNamespace 'org.pytorch.demo.objectdetection.test'
 }
 
 dependencies {
