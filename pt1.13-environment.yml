@@ -1,0 +1,16 @@
+name: pt1.13
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - setuptools<68
+  - packaging
+  - pip:
+      - torch==1.13.1+cu117
+      - torchvision==0.14.1+cu117
+      - torchaudio==0.13.1
+      - pytorchvideo
+      - -f https://download.pytorch.org/whl/cu117/torch_stable.html
+
