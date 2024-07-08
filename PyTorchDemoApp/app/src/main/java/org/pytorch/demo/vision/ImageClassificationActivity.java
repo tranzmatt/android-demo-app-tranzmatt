@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.TextureView;
-import android.view.View;
-import android.view.ViewStub;
+import android.view.View;  // Add this import
 import android.widget.TextView;
 
 import org.pytorch.IValue;
@@ -27,6 +25,7 @@ import java.util.Queue;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.view.PreviewView;
 
 public class ImageClassificationActivity extends AbstractCameraXActivity<ImageClassificationActivity.AnalysisResult> {
 
@@ -77,17 +76,15 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
   }
 
   @Override
-  protected TextureView getCameraPreviewTextureView() {
-    return ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
-        .inflate()
-        .findViewById(R.id.image_classification_texture_view);
+  protected PreviewView getCameraPreviewView() {
+    return findViewById(R.id.previewView);
   }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     final ResultRowView headerResultRowView =
-        findViewById(R.id.image_classification_result_header_row);
+            findViewById(R.id.image_classification_result_header_row);
     headerResultRowView.nameTextView.setText(R.string.image_classification_results_header_row_name);
     headerResultRowView.scoreTextView.setText(R.string.image_classification_results_header_row_score);
 
@@ -112,7 +109,7 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
       final ResultRowView rowView = mResultRowViews[i];
       rowView.nameTextView.setText(result.topNClassNames[i]);
       rowView.scoreTextView.setText(String.format(Locale.US, SCORES_FORMAT,
-          result.topNScores[i]));
+              result.topNScores[i]));
       rowView.setProgressState(false);
     }
 
@@ -140,8 +137,8 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
     }
     final String moduleAssetNameFromIntent = getIntent().getStringExtra(INTENT_MODULE_ASSET_NAME);
     mModuleAssetName = !TextUtils.isEmpty(moduleAssetNameFromIntent)
-        ? moduleAssetNameFromIntent
-        : "resnet18.pt";
+            ? moduleAssetNameFromIntent
+            : "resnet18.pt";
 
     return mModuleAssetName;
   }
@@ -162,21 +159,21 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
     try {
       if (mModule == null) {
         final String moduleFileAbsoluteFilePath = new File(
-            Utils.assetFilePath(this, getModuleAssetName())).getAbsolutePath();
+                Utils.assetFilePath(this, getModuleAssetName())).getAbsolutePath();
         mModule = Module.load(moduleFileAbsoluteFilePath);
 
         mInputTensorBuffer =
-            Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
+                Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
         mInputTensor = Tensor.fromBlob(mInputTensorBuffer, new long[]{1, 3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
       }
 
       final long startTime = SystemClock.elapsedRealtime();
       TensorImageUtils.imageYUV420CenterCropToFloatBuffer(
-          image.getImage(), rotationDegrees,
-          INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT,
-          TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
-          TensorImageUtils.TORCHVISION_NORM_STD_RGB,
-          mInputTensorBuffer, 0);
+              image.getImage(), rotationDegrees,
+              INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT,
+              TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+              TensorImageUtils.TORCHVISION_NORM_STD_RGB,
+              mInputTensorBuffer, 0);
 
       final long moduleForwardStartTime = SystemClock.elapsedRealtime();
       final Tensor outputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
