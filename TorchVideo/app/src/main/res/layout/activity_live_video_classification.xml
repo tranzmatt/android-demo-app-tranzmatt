@@ -10,7 +10,7 @@
         android:id="@+id/object_detection_texture_view_stub"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout="@layout/texture_view"
+        android:layout="@layout/view_stub_layout"
         app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
