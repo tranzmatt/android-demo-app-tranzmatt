@@ -11,7 +11,12 @@ android {
             universalApk true
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
+    compileSdkVersion 33
     defaultConfig {
         applicationId "org.pytorch.demo.torchvideo"
         minSdkVersion 28
@@ -28,11 +33,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    ndkVersion '21.0.6113669'
     namespace 'org.pytorch.demo.torchvideo'
 }
 
