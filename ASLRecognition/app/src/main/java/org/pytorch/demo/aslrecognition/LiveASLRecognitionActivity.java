@@ -2,6 +2,7 @@ package org.pytorch.demo.aslrecognition;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -10,12 +11,13 @@ import android.media.Image;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
+import android.view.TextureView;
+import android.view.ViewStub;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.camera.core.ImageProxy;
-import androidx.camera.view.PreviewView;
 
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
@@ -29,8 +31,10 @@ import org.pytorch.torchvision.TensorImageUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.Comparator;
+
 
 public class LiveASLRecognitionActivity extends org.pytorch.demo.aslrecognition.AbstractCameraXActivity<LiveASLRecognitionActivity.AnalysisResult> {
     private Module mModule = null;
@@ -54,9 +58,11 @@ public class LiveASLRecognitionActivity extends org.pytorch.demo.aslrecognition.
     }
 
     @Override
-    protected PreviewView getCameraPreviewTextureView() {
+    protected TextureView getCameraPreviewTextureView() {
         mResultView = findViewById(R.id.resultView);
-        return findViewById(R.id.preview_view);
+        return ((ViewStub) findViewById(R.id.asl_recognition_texture_view_stub))
+                .inflate()
+                .findViewById(R.id.object_detection_texture_view);
     }
 
     @Override
@@ -88,6 +94,7 @@ public class LiveASLRecognitionActivity extends org.pytorch.demo.aslrecognition.
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
+
     @Override
     @WorkerThread
     @Nullable
@@ -110,12 +117,14 @@ public class LiveASLRecognitionActivity extends org.pytorch.demo.aslrecognition.
         int maxScoreIdx = idxTm.first;
         long inferenceTime = idxTm.second;
 
-        String result = String.valueOf((char) (1 + maxScoreIdx + 64));
+        String result = String.valueOf((char)(1 + maxScoreIdx + 64));
         if (maxScoreIdx == DELETE) {
             result = "DELETE";
-        } else if (maxScoreIdx == NOTHING) {
+        }
+        else if (maxScoreIdx == NOTHING) {
             result = "NOTHING";
-        } else if (maxScoreIdx == SPACE) {
+        }
+        else if (maxScoreIdx == SPACE) {
             result = "SPACE";
         }
         return new AnalysisResult(String.format("%s - %dms", result, inferenceTime));

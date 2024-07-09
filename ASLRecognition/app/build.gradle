@@ -1,12 +1,8 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
     compileSdkVersion 33
 
     defaultConfig {
@@ -24,8 +20,13 @@ android {
             minifyEnabled false
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     namespace 'org.pytorch.demo.aslrecognition'
 }
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.5.1'
@@ -35,15 +36,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
-    def camerax_version = "1.2.2"
+    def camerax_version = "1.0.0-alpha05"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
-    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
-    implementation "androidx.camera:camera-video:${camerax_version}"
-
-    implementation "androidx.camera:camera-view:${camerax_version}"
-    implementation "androidx.camera:camera-extensions:${camerax_version}"
-    //implementation "androidx.camera:camera-mlkit-vision:${camerax_version}"
 
     implementation 'org.pytorch:pytorch_android_lite:1.13.1'
     implementation 'org.pytorch:pytorch_android_torchvision_lite:1.13.1'
