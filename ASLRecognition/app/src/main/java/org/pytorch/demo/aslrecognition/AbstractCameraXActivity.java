@@ -11,19 +11,23 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Size;
-import android.view.TextureView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.camera.core.CameraX;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrecognition.BaseModuleActivity {
     private static final int REQUEST_CODE_CAMERA_PERMISSION = 200;
@@ -33,7 +37,7 @@ public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrec
 
     protected abstract int getContentViewLayoutId();
 
-    protected abstract TextureView getCameraPreviewTextureView();
+    protected abstract PreviewView getCameraPreviewTextureView();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +47,11 @@ public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrec
         startBackgroundThread();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
-                this,
-                PERMISSIONS,
-                REQUEST_CODE_CAMERA_PERMISSION);
+                    this,
+                    PERMISSIONS,
+                    REQUEST_CODE_CAMERA_PERMISSION);
         } else {
             setupCameraX();
         }
@@ -58,10 +62,10 @@ public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrec
         if (requestCode == REQUEST_CODE_CAMERA_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 Toast.makeText(
-                    this,
-                    "You can't use live video classification example without granting CAMERA permission",
-                    Toast.LENGTH_LONG)
-                    .show();
+                                this,
+                                "You can't use live video classification example without granting CAMERA permission",
+                                Toast.LENGTH_LONG)
+                        .show();
                 finish();
             } else {
                 setupCameraX();
@@ -70,31 +74,47 @@ public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrec
     }
 
     private void setupCameraX() {
-        final TextureView textureView = getCameraPreviewTextureView();
-        final PreviewConfig previewConfig = new PreviewConfig.Builder().build();
-        final Preview preview = new Preview(previewConfig);
-        preview.setOnPreviewOutputUpdateListener(output -> textureView.setSurfaceTexture(output.getSurfaceTexture()));
+        final PreviewView previewView = getCameraPreviewTextureView();
+        final ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
-        final ImageAnalysisConfig imageAnalysisConfig =
-            new ImageAnalysisConfig.Builder()
-                .setTargetResolution(new Size(480, 640))
-                .setCallbackHandler(mBackgroundHandler)
-                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
-                .build();
-        final ImageAnalysis imageAnalysis = new ImageAnalysis(imageAnalysisConfig);
-        imageAnalysis.setAnalyzer((image, rotationDegrees) -> {
-            if (SystemClock.elapsedRealtime() - mLastAnalysisResultTime < 500) {
-                return;
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                        .setTargetResolution(new Size(480, 640))
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+
+                imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), image -> {
+                    if (SystemClock.elapsedRealtime() - mLastAnalysisResultTime < 500) {
+                        image.close();
+                        return;
+                    }
+
+                    final R result = analyzeImage(image, image.getImageInfo().getRotationDegrees());
+                    if (result != null) {
+                        mLastAnalysisResultTime = SystemClock.elapsedRealtime();
+                        runOnUiThread(() -> applyToUiAnalyzeImageResult(result));
+                    }
+                    image.close();
+                });
+
+                CameraSelector cameraSelector = new CameraSelector.Builder()
+                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                        .build();
+
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
+
+            } catch (ExecutionException | InterruptedException e) {
+                // Handle any errors (including cancellation) here.
             }
 
-            final R result = analyzeImage(image, rotationDegrees);
-            if (result != null) {
-                mLastAnalysisResultTime = SystemClock.elapsedRealtime();
-                runOnUiThread(() -> applyToUiAnalyzeImageResult(result));
-            }
-        });
-
-        CameraX.bindToLifecycle(this, preview, imageAnalysis);
+        }, ContextCompat.getMainExecutor(this));
     }
 
     @WorkerThread
@@ -104,3 +124,4 @@ public abstract class AbstractCameraXActivity<R> extends org.pytorch.demo.aslrec
     @UiThread
     protected abstract void applyToUiAnalyzeImageResult(R result);
 }
+
