@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Size;
+import android.view.Surface;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
