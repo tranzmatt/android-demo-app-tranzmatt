@@ -39,7 +39,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private final String TAG = MainActivity.class.getSimpleName();
-    private final String[] mTestVideos = {"video1", "video2", "video3"};
+    private final String[] mTestVideos = {"video1", "video2", "video3", "video4"};
 
     private Button mButtonPauseResume;
     private Button mButtonTest;
