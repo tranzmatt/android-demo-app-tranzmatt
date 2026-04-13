@@ -2,6 +2,9 @@
 
 A list of Android demo apps built on the powerful [PyTorch Mobile](https://pytorch.org/mobile) platform.
 
+> ### Note
+> PyTorch Mobile is no longer actively supported. Please check out [ExecuTorch](https://pytorch.org/executorch-overview), PyTorch’s all-new on-device inference library. You can learn more about ExecuTorch’s Android demo apps [here](https://github.com/pytorch/executorch/tree/main/examples/demo-apps/android).
+
 ### HelloWorld
 
 [HelloWorld](https://github.com/pytorch/android-demo-app/tree/master/HelloWorldApp) is a simple image classification application that demonstrates how to use the PyTorch Android API with the latest PyTorch 1.8, MobileNet v3, and [MemoryFormat.CHANNELS_LAST](https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html).
